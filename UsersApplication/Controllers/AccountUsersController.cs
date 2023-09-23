@@ -36,6 +36,7 @@ namespace UsersApplication.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel data)
         {
             if (ModelState.IsValid)
@@ -54,6 +55,16 @@ namespace UsersApplication.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> LogOut() 
+        { 
+            await _signInManager.SignOutAsync();
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel data)
         {
             if(ModelState.IsValid)

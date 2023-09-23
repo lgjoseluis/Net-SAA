@@ -1,8 +1,27 @@
-﻿<ul class="navbar-nav ml-auto">
-    <li class="nav-item">
-        <a class="nav-link text-white" asp-area="" asp-controller="AccountUsers" asp-action="Register">Registrarme</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link text-white" asp-area="" asp-controller="AccountUsers" asp-action="Login">Iniciar sesión</a>
-    </li>    
+﻿@using Microsoft.AspNetCore.Identity
+
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+<ul class="navbar-nav ml-auto">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <li class="nav-item">
+            <a class="nav-link text-white" href="#">Hola @UserManager.GetUserName(User)</a>
+        </li>
+        <li class="nav-item">
+            <form id="logOutForm" method="post" class="form-inline" asp-controller="AccountUsers" asp-action="LogOut">
+                <button type="submit" class="btn nav-link">Salir</button>
+            </form>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-white" asp-area="" asp-controller="AccountUsers" asp-action="Register">Registrarme</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-white" asp-area="" asp-controller="AccountUsers" asp-action="Login">Iniciar sesión</a>
+        </li>
+    }
 </ul>
