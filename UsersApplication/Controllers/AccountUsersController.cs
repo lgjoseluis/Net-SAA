@@ -29,6 +29,30 @@ namespace UsersApplication.Controllers
             return View(registerVM);
         }
 
+        [HttpGet]
+        public IActionResult Login()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Login(LoginViewModel data)
+        {
+            if (ModelState.IsValid)
+            {
+                Microsoft.AspNetCore.Identity.SignInResult result = await _signInManager.PasswordSignInAsync(data.Email, data.Password, data.RememberMe, lockoutOnFailure: false);
+
+                if (result.Succeeded)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+
+                ModelState.AddModelError(string.Empty, "Acceso no válido");
+            }
+
+            return View(data);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel data)
         {
