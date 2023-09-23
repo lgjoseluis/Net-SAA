@@ -1,6 +1,4 @@
-﻿using Microsoft.Identity.Client;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace UsersApplication.ViewModels
 {
@@ -11,13 +9,13 @@ namespace UsersApplication.ViewModels
         public string Email { get; set; }
 
         [Required(ErrorMessage = "La contraseña es obligatoria")]
-        [StringLength(20, ErrorMessage = "El {0} debe tener al menos {1} caracteres", MinimumLength = 6)]
+        [StringLength(20, ErrorMessage = "La {0} debe tener al menos {2} caracteres", MinimumLength = 6)]
         [DataType(DataType.Password)]
         [Display(Name = "Contraseña")]
         public string Password { get; set; }
 
         [Required(ErrorMessage = "La confirmación de contraseña es obligatoria")]
-        [Compare("Password", ErrorMessage = "La contraseña y confirmación dfe contraseña no coinciden")]
+        [Compare("Password", ErrorMessage = "La contraseña y confirmación de contraseña no coinciden")]
         [DataType(DataType.Password)]
         [Display(Name = "Confirmar contraseña")]
         public string ConfirmPassword { get; set; }
@@ -29,16 +27,20 @@ namespace UsersApplication.ViewModels
         [Required(ErrorMessage = "La fecha de nacimiento es obligatorio")]
         [Display(Name = "Fecha de nacimiento")]
         [DataType(DataType.Date)]
-        public DateTime BirthDate { get; set; }
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:yyyy-MM-dd}")]
+        public DateTime? BirthDate { get; set; }
 
         [Required(ErrorMessage = "El País es obligatorio")]
         [Display(Name = "País")]
         public string Country { get; set; }
 
+        [Required(ErrorMessage = "La Ciudad es obligatorio")]
         [Display(Name = "Ciudad")]
         public string City { get; set; }
 
+        [Required(ErrorMessage = "El teléfono es obligatorio")]
         [Display(Name = "Teléfono")]
+        [DataType(DataType.PhoneNumber)]
         public string PhoneNumber { get; set; }
     }
 }

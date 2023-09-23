@@ -1,0 +1,122 @@
+﻿@using UsersApplication.ViewModels
+
+@model RegisterViewModel
+
+@{
+    ViewData["Title"] = "Registro de usuario";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="card">
+    <div class="card-body">
+        <h3 class="card-title text-center">Registro de usuario</h3>
+
+        <form asp-controller="AccountUsers" asp-action="Register" method="post" role="form">
+            <div class="text-danger" asp-validation-summary="All"></div>
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="FullName"></label>
+                        <input asp-for="FullName" class="form-control" placeholder="Escriba su nombre"/>
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="Email" class="col-md-2"></label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="PhoneNumber" class="col-md-2"></label>
+                        <input asp-for="PhoneNumber" class="form-control" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="Country" class="col-md-2"></label>
+                        <input asp-for="Country" class="form-control" />
+                        <span asp-validation-for="Country" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="City" class="col-md-2"></label>
+                        <input asp-for="City" class="form-control" />
+                        <span asp-validation-for="City" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="BirthDate"></label>
+                        <div class="input-group">
+                            <input type="text" asp-for="BirthDate" class="form-control" id="BirthDate" placeholder="Ejemplo: 1990-10-05" readonly/>
+                            <button class="btn btn-outline-secondary" type="button" id="btn-birth-date">
+                                <i class="fa fa-calendar"></i>
+                            </button>                            
+                        </div>
+                        <span asp-validation-for="BirthDate" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="Password" class="col-md-2"></label>
+                        <input asp-for="Password" class="form-control" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="ConfirmPassword"></label>
+                        <input asp-for="ConfirmPassword" class="form-control"/>
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>            
+
+            <div class="row">
+                <div class="col-md-10 offset-2">
+                    <button type="submit" class="btn btn-success btn-lg w-75">Registrarse</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(function () {
+            $("#BirthDate").datepicker({
+                changeMonth: true,
+                changeYear: true,
+                yearRange: '-150:+0',
+                dateFormat:'yy-mm-dd'
+            });
+        });
+        $('#btn-birth-date').click(function () {
+            $("#BirthDate").focus();
+        });
+    </script>
+}
