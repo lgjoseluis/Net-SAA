@@ -15,7 +15,19 @@ builder.Services.AddDbContext<ApplicationDbContext>(
 builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
 
 //Set url return 
-builder.Services.ConfigureApplicationCookie(options => { options.LoginPath = new PathString("/AccountUsers/Login"); });
+builder.Services.ConfigureApplicationCookie(options => { 
+    options.LoginPath = new PathString("/AccountUsers/Login");
+    options.AccessDeniedPath = new PathString("/AccountUsers/UserBlocked");
+});
+
+//Configure identity options
+builder.Services.Configure<IdentityOptions>( options => { 
+    options.Password.RequiredLength = 6;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireUppercase = true;
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(1);
+    options.Lockout.MaxFailedAccessAttempts = 3;
+});
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

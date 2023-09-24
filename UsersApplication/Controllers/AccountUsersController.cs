@@ -49,11 +49,19 @@ namespace UsersApplication.Controllers
 
             if (ModelState.IsValid)
             {
-                Microsoft.AspNetCore.Identity.SignInResult result = await _signInManager.PasswordSignInAsync(data.Email, data.Password, data.RememberMe, lockoutOnFailure: false);
+                Microsoft.AspNetCore.Identity.SignInResult result = await _signInManager.PasswordSignInAsync(
+                    data.Email, 
+                    data.Password, 
+                    data.RememberMe, 
+                    lockoutOnFailure: true);
 
                 if (result.Succeeded)
                 {
                     return LocalRedirect(returnUrl);
+                }
+                else if (result.IsLockedOut) 
+                {
+                    return View("UserBlocked");
                 }
 
                 ModelState.AddModelError(string.Empty, "Acceso no válido");
