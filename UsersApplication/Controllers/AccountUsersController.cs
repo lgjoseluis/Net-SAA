@@ -22,30 +22,38 @@ namespace UsersApplication.Controllers
         }
 
         [HttpGet]
-        public IActionResult Register()
+        public IActionResult Register(string returnUrl = null)
         {
+            ViewData["ReturnUrl"] = returnUrl;
+
             RegisterViewModel registerVM = new();
 
             return View(registerVM);
         }
 
         [HttpGet]
-        public IActionResult Login()
+        public IActionResult Login(string returnUrl = null)
         {
+            ViewData["ReturnUrl"] = returnUrl;
+
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel data)
+        public async Task<IActionResult> Login(LoginViewModel data, string returnUrl = null)
         {
+            ViewData["ReturnUrl"] = returnUrl;
+
+            returnUrl = returnUrl ?? Url.Content("~/");
+
             if (ModelState.IsValid)
             {
                 Microsoft.AspNetCore.Identity.SignInResult result = await _signInManager.PasswordSignInAsync(data.Email, data.Password, data.RememberMe, lockoutOnFailure: false);
 
                 if (result.Succeeded)
                 {
-                    return RedirectToAction("Index", "Home");
+                    return LocalRedirect(returnUrl);
                 }
 
                 ModelState.AddModelError(string.Empty, "Acceso no válido");
@@ -65,9 +73,13 @@ namespace UsersApplication.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(RegisterViewModel data)
+        public async Task<IActionResult> Register(RegisterViewModel data, string returnUrl = null)
         {
-            if(ModelState.IsValid)
+            ViewData["ReturnUrl"] = returnUrl;
+
+            returnUrl = returnUrl ?? Url.Content("~/");
+
+            if (ModelState.IsValid)
             {
                 ApplicationUser user = new ApplicationUser { 
                     UserName = data.Email,
@@ -85,7 +97,7 @@ namespace UsersApplication.Controllers
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
 
-                    return RedirectToAction("Index", "Home");
+                    return LocalRedirect(returnUrl);
                 }
 
                 ValidarErrores(result);
