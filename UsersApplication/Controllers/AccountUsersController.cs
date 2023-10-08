@@ -147,7 +147,7 @@ namespace UsersApplication.Controllers
 
                 if (user is null)
                 {
-                    return RedirectToAction("ConfirmResetPassword");
+                    return RedirectToAction("Error");
                 }
 
                 IdentityResult result = await _userManager.ResetPasswordAsync(user,model.Code, model.Password);
@@ -193,6 +193,24 @@ namespace UsersApplication.Controllers
 
                 if(result.Succeeded)
                 {
+                    string code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+                    string urlReturn = Url.Action(
+                    "ConfirmRegister",
+                    "AccountUsers",
+                    new
+                    {
+                        userId = user.Id,
+                        code = code,
+                    },
+                    HttpContext.Request.Scheme);
+
+                    await _emailSender.SendEmailAsync(
+                        data.Email,
+                        "Confirmar registro|Net-SAA",
+                        $"Para confirmar su registro de click aqui - <a href=\"{urlReturn}\">enlace</a>"
+                    );
+
                     await _signInManager.SignInAsync(user, isPersistent: false);
 
                     return LocalRedirect(returnUrl);
@@ -202,6 +220,26 @@ namespace UsersApplication.Controllers
             }
 
             return View(data);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ConfirmRegister(string userId, string code)
+        {
+            if(string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code))
+            {
+                return View("Error");
+            }
+
+            IdentityUser user = await _userManager.FindByIdAsync(userId);
+
+            if (user is null)
+            { 
+                return View("Error");
+            }
+
+            IdentityResult result = await _userManager.ConfirmEmailAsync(user, code);
+
+            return View(result.Succeeded ? "ConfirmRegister": "Error");
         }
 
         private void ValidarErrores(IdentityResult result) 
