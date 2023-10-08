@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
 using UsersApplication.Models;
 using UsersApplication.ViewModels;
 
@@ -9,11 +11,13 @@ namespace UsersApplication.Controllers
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly IEmailSender _emailSender;
 
-        public AccountUsersController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+        public AccountUsersController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IEmailSender emailSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _emailSender = emailSender;
         }
 
         public IActionResult Index()
@@ -77,6 +81,92 @@ namespace UsersApplication.Controllers
             await _signInManager.SignOutAsync();
 
             return RedirectToAction("Index", "Home");
+        }
+
+        [HttpGet]
+        public IActionResult RecoveryPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RecoveryPassword(RecoveryPasswordViewModel model)
+        {
+            if(ModelState.IsValid)
+            {
+                IdentityUser user = await _userManager.FindByEmailAsync(model.Email);
+
+                if(user is null)
+                {
+                    return RedirectToAction("ConfirmRecoveryPassword");
+                }
+
+                string code = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+                string urlReturn = Url.Action(
+                    "ResetPassword", 
+                    "AccountUsers", 
+                    new {
+                        userId = user.Id,
+                        code = code,
+                    },
+                    HttpContext.Request.Scheme);
+
+                await _emailSender.SendEmailAsync(
+                    model.Email,
+                    "Recuperar contraseña|Net-SAA",
+                    $"Para recuperar su contraseña de click aqui - <a href=\"{urlReturn}\">enlace</a>"
+                );
+
+                return RedirectToAction("ConfirmRecoveryPassword");
+            }            
+
+            return View(model);
+        }
+
+        [HttpGet]
+        public IActionResult ConfirmRecoveryPassword()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult ResetPassword(string code=null)
+        {
+            return code is null ? View("Error") : View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                IdentityUser user = await _userManager.FindByEmailAsync(model.Email);
+
+                if (user is null)
+                {
+                    return RedirectToAction("ConfirmResetPassword");
+                }
+
+                IdentityResult result = await _userManager.ResetPasswordAsync(user,model.Code, model.Password);
+
+                if (result.Succeeded) 
+                {
+                    return RedirectToAction("ConfirmResetPassword");
+                }
+
+                ValidarErrores(result);
+            }
+
+            return View(model);
+        }
+
+        [HttpGet]
+        public IActionResult ConfirmResetPassword()
+        {
+            return View();
         }
 
         [HttpPost]

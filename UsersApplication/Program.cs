@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using UsersApplication.Data;
+using UsersApplication.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +14,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(
     );
 
 //Add identity service
-builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 
 //Set url return 
 builder.Services.ConfigureApplicationCookie(options => { 
@@ -28,6 +30,9 @@ builder.Services.Configure<IdentityOptions>( options => {
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(1);
     options.Lockout.MaxFailedAccessAttempts = 3;
 });
+
+//IEmailSender
+builder.Services.AddTransient<IEmailSender, MailJetSender>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
