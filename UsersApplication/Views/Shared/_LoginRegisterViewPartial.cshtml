@@ -6,9 +6,29 @@
 <ul class="navbar-nav ml-auto">
     @if (SignInManager.IsSignedIn(User))
     {
-        <li class="nav-item">
-            <a class="nav-link text-white" href="#">Hola @UserManager.GetUserName(User)</a>
-        </li>
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                @UserManager.GetUserName(User)
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <li>
+                    <a class="dropdown-item" asp-controller="Users" asp-action="EditProfile" asp-route-id="@UserManager.GetUserId(User)">
+                        Editar perfil
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" asp-controller="Users" asp-action="ChangePassword" >
+                        Cambiar contraseña
+                    </a>
+                </li>
+                @* <li><hr class="dropdown-divider"></li>
+                <li class="nav-item">
+                    <a class="dropdown-item" href="#">
+                        ***
+                    </a>                    
+                </li> *@
+            </ul>
+        </li>       
         <li class="nav-item">
             <form id="logOutForm" method="post" class="form-inline" asp-controller="AccountUsers" asp-action="LogOut">
                 <button type="submit" class="btn nav-link">Salir</button>
