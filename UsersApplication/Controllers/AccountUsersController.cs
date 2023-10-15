@@ -276,6 +276,17 @@ namespace UsersApplication.Controllers
             );
         }
 
+        [HttpGet]
+        public async Task<IActionResult> DeactivateAuthenticator()
+        {
+            IdentityUser user = await _userManager.GetUserAsync(User);
+
+            await _userManager.ResetAuthenticatorKeyAsync(user);
+            await _userManager.SetTwoFactorEnabledAsync(user, false);
+            
+            return RedirectToAction(nameof(Index), "Home");
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ActivateAuthenticator(TwoFactorAuthenticationViewModel model)

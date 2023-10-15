@@ -6,8 +6,19 @@
     <h1 class="display-4">Welcome</h1>
     @if(User.Identity.IsAuthenticated)
     {
-        <a asp-controller="AccountUsers" asp-action="ActivateAuthenticator" class="btn btn-primary">
-            Activar autenticación de dos factores
-        </a>
+        dynamic TwoFactorAuthEnabled = ViewData["TwoFactorAuthEnabled"];
+
+        if (TwoFactorAuthEnabled is not null && TwoFactorAuthEnabled.ToString().ToLower() == "true")
+        {
+            <a asp-controller="AccountUsers" asp-action="DeactivateAuthenticator" class="btn btn-danger">
+                Desactivar autenticación de dos factores
+            </a>
+        }
+        else
+        {
+            <a asp-controller="AccountUsers" asp-action="ActivateAuthenticator" class="btn btn-primary">
+                Activar autenticación de dos factores
+            </a>
+        }
     }    
 </div>
