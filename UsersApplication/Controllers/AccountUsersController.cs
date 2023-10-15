@@ -63,7 +63,12 @@ namespace UsersApplication.Controllers
                 {
                     return LocalRedirect(returnUrl);
                 }
-                else if (result.IsLockedOut) 
+
+                if (result.RequiresTwoFactor)
+                {
+                    return RedirectToAction(nameof(VerifyAuthenticatorCode), new { returnUrl, data.RememberMe });
+                }
+                else if (result.IsLockedOut)
                 {
                     return View("UserBlocked");
                 }
@@ -240,6 +245,91 @@ namespace UsersApplication.Controllers
             IdentityResult result = await _userManager.ConfirmEmailAsync(user, code);
 
             return View(result.Succeeded ? "ConfirmRegister": "Error");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ActivateAuthenticator()
+        {
+            IdentityUser user = await _userManager.GetUserAsync(User);
+
+            await _userManager.ResetAuthenticatorKeyAsync(user);
+
+            string token = await _userManager.GetAuthenticatorKeyAsync(user);
+
+            return View(
+                new TwoFactorAuthenticationViewModel() { Token = token }
+            );
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ActivateAuthenticator(TwoFactorAuthenticationViewModel model)
+        {
+            if (ModelState.IsValid) 
+            {
+                IdentityUser user = await _userManager.GetUserAsync(User);
+                bool succeded = await _userManager.VerifyTwoFactorTokenAsync(user, _userManager.Options.Tokens.AuthenticatorTokenProvider, model.Code);
+
+                if (succeded)
+                {
+                    await _userManager.SetTwoFactorEnabledAsync(user, true);
+                }
+                else 
+                {
+                    ModelState.AddModelError("Error", "Su autenticación de dos factores no se ha validado");
+                    return View(model);
+                }
+            }
+
+            return RedirectToAction(nameof(ConfirmAuthenticator));
+        }
+
+        [HttpGet]
+        public IActionResult ConfirmAuthenticator()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> VerifyAuthenticatorCode(bool rememberData, string returnUrl = null)
+        {
+            IdentityUser user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+
+            if (user is null)
+            {
+                return View("Error");
+            }
+
+            ViewData["ReturnUrl"] = returnUrl;
+
+            return View( new VerifyAuthenticatorCodeViewModel() { ReturnUrl = returnUrl, RememberData = rememberData});
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> VerifyAuthenticatorCode(VerifyAuthenticatorCodeViewModel model)
+        {
+            model.ReturnUrl = model.ReturnUrl ?? Url.Content("~/");
+
+            if (!ModelState.IsValid) 
+            {
+                return View(model);
+            }
+
+            Microsoft.AspNetCore.Identity.SignInResult result = await _signInManager.TwoFactorAuthenticatorSignInAsync(model.Code,model.RememberData, rememberClient:true);
+
+            if (result.Succeeded) 
+            {
+                return LocalRedirect(model.ReturnUrl);
+            }
+            else if (result.IsLockedOut)
+            {
+                return View("UserBlocked");
+            }
+
+            ModelState.AddModelError(String.Empty, "Código inválido");
+
+            return View(model);
         }
 
         private void ValidarErrores(IdentityResult result) 

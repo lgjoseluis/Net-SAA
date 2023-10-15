@@ -1,0 +1,39 @@
+﻿@using UsersApplication.ViewModels
+
+@model VerifyAuthenticatorCodeViewModel
+
+<h2>
+    Verificar código del autenticador
+</h2>
+
+<form method="post" asp-controller="AccountUsers" asp-action="VerifyAuthenticatorCode" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post">
+    <div class="text-danger" asp-validation-summary="All"></div>
+    <input type="hidden" asp-for="RememberData" />
+    <hr />
+
+    <div class="row">
+        <div class="col-sm-7">
+            <div class="col-md-12">
+                <label asp-for="Code"></label>
+                <input type="text" asp-for="Code" class="form-control" placeholder="Código de autenticación" />
+                <span asp-validation-for="Code" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="col-sm-5">
+            <div class="col-sm-5">
+                <div class="col-md-12 pt4">
+                    <button type="submit" class="btn btn-success mt-3">
+                        <i class="fa-solid fa-unlock"></i>
+                        Enviar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
