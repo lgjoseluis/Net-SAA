@@ -3,11 +3,15 @@
 @model TwoFactorAuthenticationViewModel
 
 <p>
-    Por favor, ingrese el código de abajo en su APP autenticador
+    <strong>Ingrese el código en su APP autenticador</strong>
 </p>
+@Model.Token
+
 <p>
-    @Model.Token
+    Ecanear el código QR
 </p>
+
+<div id="qrCode"></div>
 
 <form method="post">
     <input type="hidden" asp-for="Token"/>
@@ -37,4 +41,8 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script src="~/js/qrcode.js"></script>
+    <script type="text/javascript">
+        new QRCode(document.getElementById("qrCode"), "@Model.UrlQrCode");
+    </script>
 }
