@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Encodings.Web;
@@ -7,6 +8,7 @@ using UsersApplication.ViewModels;
 
 namespace UsersApplication.Controllers
 {
+    [Authorize]
     public class AccountUsersController : Controller
     {
         private readonly UserManager<IdentityUser> _userManager;
@@ -25,12 +27,15 @@ namespace UsersApplication.Controllers
             _urlEncoder = urlEncoder;
         }
 
+        [HttpGet]
+        [AllowAnonymous]
         public IActionResult Index()
         {
             return View();
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult Register(string returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
@@ -41,6 +46,7 @@ namespace UsersApplication.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult Login(string returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
@@ -50,6 +56,7 @@ namespace UsersApplication.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [AllowAnonymous]
         public async Task<IActionResult> Login(LoginViewModel data, string returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
@@ -94,6 +101,7 @@ namespace UsersApplication.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult RecoveryPassword()
         {
             return View();
@@ -101,6 +109,7 @@ namespace UsersApplication.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [AllowAnonymous]
         public async Task<IActionResult> RecoveryPassword(RecoveryPasswordViewModel model)
         {
             if(ModelState.IsValid)
@@ -136,18 +145,21 @@ namespace UsersApplication.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult ConfirmRecoveryPassword()
         {
             return View();
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult ResetPassword(string code=null)
         {
             return code is null ? View("Error") : View();
         }
 
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
@@ -174,6 +186,7 @@ namespace UsersApplication.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult ConfirmResetPassword()
         {
             return View();
@@ -181,6 +194,7 @@ namespace UsersApplication.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [AllowAnonymous]
         public async Task<IActionResult> Register(RegisterViewModel data, string returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
@@ -233,6 +247,7 @@ namespace UsersApplication.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> ConfirmRegister(string userId, string code)
         {
             if(string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code))
@@ -317,6 +332,7 @@ namespace UsersApplication.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> VerifyAuthenticatorCode(bool rememberData, string returnUrl = null)
         {
             IdentityUser user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
@@ -333,6 +349,7 @@ namespace UsersApplication.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [AllowAnonymous]
         public async Task<IActionResult> VerifyAuthenticatorCode(VerifyAuthenticatorCodeViewModel model)
         {
             model.ReturnUrl = model.ReturnUrl ?? Url.Content("~/");
@@ -358,6 +375,7 @@ namespace UsersApplication.Controllers
             return View(model);
         }
 
+        [AllowAnonymous]
         private void ValidarErrores(IdentityResult result) 
         {
             foreach (IdentityError error in result.Errors) 
