@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Encodings.Web;
+using UsersApplication.Constants;
 using UsersApplication.Models;
 using UsersApplication.ViewModels;
 
@@ -13,16 +14,19 @@ namespace UsersApplication.Controllers
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IEmailSender _emailSender;
         private readonly UrlEncoder _urlEncoder;
 
         public AccountUsersController(UserManager<IdentityUser> userManager, 
-            SignInManager<IdentityUser> signInManager, 
+            SignInManager<IdentityUser> signInManager,
+            RoleManager<IdentityRole> roleManager,
             IEmailSender emailSender,
             UrlEncoder urlEncoder)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _roleManager = roleManager;
             _emailSender = emailSender;
             _urlEncoder = urlEncoder;
         }
@@ -215,8 +219,22 @@ namespace UsersApplication.Controllers
 
                 IdentityResult result = await _userManager.CreateAsync(user, data.Password);
 
-                if(result.Succeeded)
+                if (result.Succeeded)
                 {
+                    bool roleAdminExists = await _roleManager.RoleExistsAsync(StringValues.ROLE_ADMIN);
+
+                    if (!roleAdminExists)
+                    {
+                        await _roleManager.CreateAsync(new IdentityRole(StringValues.ROLE_ADMIN));
+                    }
+
+                    bool userAdminExists = _userManager.GetUsersInRoleAsync(StringValues.ROLE_ADMIN).Result.Any();
+
+                    if (!userAdminExists)
+                    {
+                        await _userManager.AddToRoleAsync(user, StringValues.ROLE_ADMIN);
+                    }
+
                     string code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
                     string urlReturn = Url.Action(
@@ -373,6 +391,18 @@ namespace UsersApplication.Controllers
             ModelState.AddModelError(String.Empty, "Código inválido");
 
             return View(model);
+        }
+
+        [HttpGet]
+        public IActionResult UserBlocked()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult AcessDenied()
+        {
+            return View();
         }
 
         [AllowAnonymous]

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using UsersApplication.Constants;
 using UsersApplication.Models;
 
 namespace UsersApplication.Controllers
@@ -28,7 +29,7 @@ namespace UsersApplication.Controllers
             return View();
         }
 
-        [Authorize]
+        [Authorize(Roles = StringValues.ROLE_ADMIN)]
         public IActionResult Privacy()
         {
             return View();

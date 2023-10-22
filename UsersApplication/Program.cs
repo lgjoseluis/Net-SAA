@@ -19,7 +19,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkSto
 //Set url return 
 builder.Services.ConfigureApplicationCookie(options => { 
     options.LoginPath = new PathString("/AccountUsers/Login");
-    options.AccessDeniedPath = new PathString("/AccountUsers/UserBlocked");
+    options.AccessDeniedPath = new PathString("/AccountUsers/AcessDenied");
 });
 
 //Configure identity options
