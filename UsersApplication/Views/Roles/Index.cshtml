@@ -1,0 +1,117 @@
+﻿@model IEnumerable<Microsoft.AspNetCore.Identity.IdentityRole>
+
+@{
+    ViewData["Title"] = "Administración de roles";
+}
+
+<h1 class="text-center">Administración de roles</h1>
+
+@if (TempData["RoleSuccess"] is not null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["RoleSuccess"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["RoleError"] is not null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["RoleError"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="d-flex flex-row-reverse mb-2">
+        <a asp-controller="Roles" asp-action="Create" class="btn btn-success">
+            <i class="fa-solid fa-plus"></i>
+            Crear
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card border">
+            
+            <div class="card-header">
+                <h3><string>Lista de roles</string></h3>
+            </div>
+
+            <div class="card-body">
+                <div class="table-responsive">
+                    @if (Model.Any())
+                    {
+                        <table class="d-lg-table table-bordered" id="table-roles" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Rol</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach(var item in Model)
+                                {
+                                    <tr>
+                                        <td>@Html.DisplayFor(m => item.Id)</td>
+                                        <td>@Html.DisplayFor(m => item.Name)</td>
+                                        <td>
+                                            <div class="btn-toolbar" role="toolbar" aria-label="toolbar with button group">
+                                                <div class="btn-group me-2" role="group" aria-label="First group">
+                                                    <a class="btn btn-primary" asp-controller="Roles" asp-action="Edit" asp-route-id="@item.Id">
+                                                        <i class="fa-solid fa-pen-to-square"></i>
+                                                    </a>
+                                                </div>
+
+                                                <div class="btn-group" role="group" aria-label="Second group">
+                                                    <form asp-action="Delete" asp-route-id="@item.Id">
+                                                        <button type="submit" onclick="return confirm('¿Está seguro de borral el rol @item.Name?');" class="btn btn-danger">
+                                                            <i class="fa-solid fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <p>No hay registros</p>
+                    }
+                </div>
+            </div>
+
+        </div>        
+    </div>
+</div>
+
+@section Scripts{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(function () {
+            $("#table-roles").DataTable({
+                language: {
+                    "info": 'Mostrando _START_ a _END_ de _TOTAL_ entradas',
+                    "infoEmpty": 'No records available',
+                    "infoFiltered": '(filtrando de _MAX_ total entradas)',
+                    "lengthMenu": 'Mostrar _MENU_ entradas',
+                    "zeroRecords": 'Sin resultados',
+                    "paginate": {
+                        "first": "Primero",
+                        "last": "Último",
+                        "next": "Siguiente",
+                        "previous": "Anterior"
+                    }
+                }
+            });
+        });        
+    </script>
+}
