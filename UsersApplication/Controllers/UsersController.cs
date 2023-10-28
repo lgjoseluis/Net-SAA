@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Data;
+using UsersApplication.Constants;
 using UsersApplication.Data;
 using UsersApplication.Models;
 using UsersApplication.ViewModels;
@@ -19,9 +22,27 @@ namespace UsersApplication.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
+        [HttpGet]
+        [Authorize(Roles = StringValues.ROLE_ADMIN)]
+        public async Task<IActionResult> Index()
         {
-            return View();
+            List<ApplicationUser> users = await _context.ApplicationUsers.ToListAsync();
+            List<IdentityUserRole<string>> userRoles =  await _context.UserRoles.ToListAsync();
+            List<IdentityRole> roles = await _context.Roles.ToListAsync();
+
+            foreach (ApplicationUser user in users)
+            {
+                IdentityUserRole<string> role = userRoles.Find( u => u.UserId == user.Id);
+
+                user.Role = "Niguno";
+
+                if (role is not null)
+                {
+                    user.Role = roles.Find(u => u.Id == role.RoleId).Name;
+                }
+            }
+
+            return View(users);
         }
 
         [HttpGet]
@@ -103,6 +124,121 @@ namespace UsersApplication.Controllers
         public IActionResult ConfirmChangePassword()
         {
             return View();
+        }
+
+        [HttpGet]
+        [Authorize(Roles = StringValues.ROLE_ADMIN)]
+        public IActionResult Edit(string id)
+        {
+            ApplicationUser user = _context.ApplicationUsers.FirstOrDefault(u => u.Id == id);
+
+            if (user is null)
+            {
+                return NotFound();
+            }
+
+            List<IdentityUserRole<string>> usersRoles = _context.UserRoles.ToList();
+            List<IdentityRole> roles =  _context.Roles.ToList();
+            IdentityUserRole<string> role = usersRoles.Find(u => u.UserId == user.Id);
+
+            if(role is not null)
+            {
+                user.RoleId = roles.Find(u => u.Id == role.RoleId).Id;
+            }
+
+            user.RoleList = roles.Select(u => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem 
+            { 
+                Text = u.Name,
+                Value = u.Id
+            });
+
+            return View(user);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = StringValues.ROLE_ADMIN)]
+        public async Task<IActionResult> Edit(ApplicationUser model)
+        {
+            if (ModelState.IsValid)
+            {
+                ApplicationUser user = _context.ApplicationUsers.FirstOrDefault(u => u.Id == model.Id);
+
+                if (user is null)
+                {
+                    return NotFound();
+                }
+
+                string newRole = _context.Roles.FirstOrDefault(u => u.Id == model.RoleId)!.Name;
+
+                IdentityUserRole<string> role = _context.UserRoles.FirstOrDefault(u => u.UserId == user.Id);
+
+                if (role is not null)
+                {
+                    string currentRole = _context.Roles.Where(u => u.Id == role.RoleId).Select(e => e.Name).FirstOrDefault();
+
+                    await _userManager.RemoveFromRoleAsync(user, currentRole);
+                }                
+                
+                await _userManager.AddToRoleAsync(user, newRole);
+
+                return RedirectToAction(nameof(Index));
+            }
+                        
+            model.RoleList = _context.Roles.Select(u => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+            {
+                Text = u.Name,
+                Value = u.Id
+            });
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = StringValues.ROLE_ADMIN)]
+        public IActionResult LockUnlock(string userId)
+        {          
+            ApplicationUser user = _context.ApplicationUsers.FirstOrDefault(u => u.Id == userId);
+
+            if (user is null)
+            {
+                return NotFound();
+            }
+
+            if(user.LockoutEnd is not null && user.LockoutEnd > DateTime.Now) //User locked
+            {
+                user.LockoutEnd = DateTime.Now;
+                TempData["UserSuccess"] = $"El usuario {user.FullName} se ha bloqueado correctamente";
+            }
+            else 
+            {
+                user.LockoutEnd = DateTime.Now.AddYears(100);
+                TempData["UserSuccess"] = $"El usuario {user.FullName} se ha desbloqueado correctamente";
+            }
+
+            _context.SaveChanges();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = StringValues.ROLE_ADMIN)]
+        public IActionResult Delete(string id)
+        {
+            ApplicationUser user = _context.ApplicationUsers.FirstOrDefault(u => u.Id == id);
+
+            if (user is null)
+            {
+                return NotFound();
+            }
+
+            _context.ApplicationUsers.Remove(user);
+            _context.SaveChanges();
+            TempData["UserSuccess"] = $"El usuario {user.FullName} se ha borrado correctamente";
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }
