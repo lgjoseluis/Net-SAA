@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using UsersApplication.Constants;
 using UsersApplication.Data;
 using UsersApplication.Services;
 
@@ -29,6 +30,15 @@ builder.Services.Configure<IdentityOptions>( options => {
     options.Password.RequireUppercase = true;
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(1);
     options.Lockout.MaxFailedAccessAttempts = 3;
+});
+
+//Auth with directives and policies
+builder.Services.AddAuthorization(options => {
+    //Role
+    options.AddPolicy(StringValues.Policies.ADMINISTRATOR, policy => policy.RequireRole(StringValues.ROLE_ADMIN));
+
+    //Claims
+    options.AddPolicy(StringValues.Policies.ADMIN_EDIT, policy => policy.RequireRole(StringValues.ROLE_ADMIN).RequireClaim("Edit", "True"));
 });
 
 //IEmailSender

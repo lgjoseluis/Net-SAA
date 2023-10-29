@@ -26,7 +26,7 @@ namespace UsersApplication.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = StringValues.ROLE_ADMIN)]
+        [Authorize(Policy = StringValues.Policies.ADMINISTRATOR)]
         public async Task<IActionResult> Index()
         {
             List<ApplicationUser> users = await _context.ApplicationUsers.ToListAsync();
@@ -130,7 +130,7 @@ namespace UsersApplication.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = StringValues.ROLE_ADMIN)]
+        [Authorize(Policy = StringValues.Policies.ADMIN_EDIT)]
         public IActionResult Edit(string id)
         {
             ApplicationUser user = _context.ApplicationUsers.FirstOrDefault(u => u.Id == id);
@@ -160,7 +160,7 @@ namespace UsersApplication.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = StringValues.ROLE_ADMIN)]
+        [Authorize(Policy = StringValues.Policies.ADMIN_EDIT)]
         public async Task<IActionResult> Edit(ApplicationUser model)
         {
             if (ModelState.IsValid)
