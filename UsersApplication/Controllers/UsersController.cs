@@ -3,10 +3,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using System.Security.Claims;
+using UsersApplication.Claims;
 using UsersApplication.Constants;
 using UsersApplication.Data;
 using UsersApplication.Models;
 using UsersApplication.ViewModels;
+using static UsersApplication.ViewModels.UserClaimsViewModel;
 
 namespace UsersApplication.Controllers
 {
@@ -237,6 +240,63 @@ namespace UsersApplication.Controllers
             _context.ApplicationUsers.Remove(user);
             _context.SaveChanges();
             TempData["UserSuccess"] = $"El usuario {user.FullName} se ha borrado correctamente";
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ManageClaims(string id)
+        { 
+            IdentityUser user = await _userManager.FindByIdAsync(id);
+
+            if (user is null)
+                return NotFound();
+
+            IList<Claim> userClaims = await _userManager.GetClaimsAsync(user);
+
+            UserClaimsViewModel model = new UserClaimsViewModel() { 
+                UserId = id
+            };
+
+            foreach (Claim claim in CatalogClaims.EditClaims)             
+            {
+                UserClaim userClaim = new UserClaim() { 
+                    ClaimType = claim.Type,
+                    Selected = userClaims.Any(c => c.Type == claim.Type)
+                };
+
+                model.Claims.Add(userClaim);
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ManageClaims(UserClaimsViewModel model)
+        {
+            IdentityUser user = await _userManager.FindByIdAsync(model.UserId);
+
+            if (user is null)
+                return NotFound();
+
+            IList<Claim> userClaims = await _userManager.GetClaimsAsync(user);
+
+            IdentityResult result = await _userManager.RemoveClaimsAsync(user, userClaims);
+
+            if (!result.Succeeded)
+            { 
+                return View(model);
+            }
+
+            IEnumerable<Claim> newClaims = model.Claims.Where(c => c.Selected).Select( s => new Claim(s.ClaimType, s.Selected.ToString()));
+
+            result = await _userManager.AddClaimsAsync(user, newClaims);
+
+            if (!result.Succeeded)
+            {
+                return View(model);
+            }
 
             return RedirectToAction(nameof(Index));
         }

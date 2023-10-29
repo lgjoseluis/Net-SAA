@@ -70,12 +70,18 @@
                                                     </form>
                                                 </div>
 
-                                                <div class="btn-group" role="group" aria-label="End group">
+                                                <div class="btn-group me-2" role="group" aria-label="End group">
                                                     <form asp-action="Delete" asp-route-id="@item.Id">
                                                         <button type="submit" onclick="return confirm('¿Está seguro de borral el usuario @item.FullName?');" class="btn btn-danger">
                                                             <i class="fa-solid fa-trash"></i>
                                                         </button>
                                                     </form>
+                                                </div>
+
+                                                <div class="btn-group" role="group" aria-label="Claim group">
+                                                    <a class="btn btn-info" asp-controller="Users" asp-action="ManageClaims" asp-route-id="@item.Id" data-bs-toggle="tooltip" data-bs-placement="top" title="Asignar permisos (claims)">
+                                                        <i class="fa-solid fa-list-check"></i>
+                                                    </a>
                                                 </div>
                                             </div>
                                         </td>
@@ -117,6 +123,12 @@
                     }
                 }
             });
+
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+
         });
     </script>
 }
